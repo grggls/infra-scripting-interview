@@ -1,4 +1,3 @@
-
 terraform {
   source = "git::https://github.com/cloudposse/terraform-aws-ecr.git//.?ref=0.35.0"
 }

@@ -14,17 +14,12 @@ dependency "subnets" {
   config_path = "../subnets"
 }
 
-dependency "ecr-client" {
-  config_path = "../ecr-client"
-}
-
-dependency "ecr-server" {
-  config_path = "../ecr-server"
+dependency "ecr" {
+  config_path = "../ecr"
 }
 
 inputs = {
-  namespace                       = "interview"
-  name                            = "gpd"
+  name                            = "cluster01"
   container_insights_enabled      = true
   capacity_providers_fargate      = true
   capacity_providers_fargate_spot = true
