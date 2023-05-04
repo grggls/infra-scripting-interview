@@ -22,5 +22,5 @@ inputs = {
   name                            = "cluster01"
   container_insights_enabled      = true
   capacity_providers_fargate      = true
-  capacity_providers_fargate_spot = true
+  capacity_providers_fargate_spot = false
 }
