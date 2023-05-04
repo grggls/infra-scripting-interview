@@ -27,7 +27,7 @@ dependency "alb" {
 }
 
 inputs = {
-  name        = "client"
+  name        = "app"
   launch_type = "FARGATE"
   vpc_id      = dependency.vpc.outputs.vpc_id
 
@@ -91,7 +91,7 @@ inputs = {
   alb_security_group                              = dependency.alb.outputs.security_group_id
   alb_ingress_unauthenticated_listener_arns       = dependency.alb.outputs.listener_arns
   alb_arn_suffix                                  = dependency.alb.outputs.alb_arn_suffix
-  alb_ingress_unauthenticated_listener_arns_count = 2
+  alb_ingress_unauthenticated_listener_arns_count = 1
   alb_ingress_healthcheck_path                    = "/"
   alb_ingress_unauthenticated_paths               = ["/*"]
   alb_ingress_listener_unauthenticated_priority   = 100
