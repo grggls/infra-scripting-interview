@@ -36,11 +36,11 @@ inputs = {
   container_cpu    = 256
   container_memory = 512
   container_port   = 3000
-  port_mappings    = [
+  port_mappings = [
     {
       containerPort = 3000
-      hostPort = 3000
-      protocol = "tcp"
+      hostPort      = 3000
+      protocol      = "tcp"
     }
   ]
 
@@ -60,6 +60,7 @@ inputs = {
   ]
 
   codepipeline_enabled = false
+  ecr_enabled          = false
   webhook_enabled      = false
   badge_enabled        = false
   ecs_alarms_enabled   = true
@@ -92,11 +93,11 @@ inputs = {
   alb_ingress_unauthenticated_listener_arns       = dependency.alb.outputs.listener_arns
   alb_arn_suffix                                  = dependency.alb.outputs.alb_arn_suffix
   alb_ingress_unauthenticated_listener_arns_count = 1
-  alb_ingress_healthcheck_path                    = "/"
+  alb_ingress_healthcheck_path                    = "/healthz"
   alb_ingress_unauthenticated_paths               = ["/*"]
   alb_ingress_listener_unauthenticated_priority   = 100
 
- 
+
   #alb_target_group_alarms_enabled                 = true
   #alb_target_group_alarms_3xx_threshold           = 25
   #alb_target_group_alarms_4xx_threshold           = 25

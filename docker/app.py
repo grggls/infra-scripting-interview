@@ -5,12 +5,18 @@ import os
 
 app = Flask(__name__)
 
-# Initialize the DynamoDB client
-dynamodb = boto3.resource('dynamodb',
-                          region_name=os.environ['AWS_REGION'],
-                          aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-                          aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+# Initialize the DynamoDB client, either with env credentials or w/o (assume IAM role)
+if 'AWS_ACCESS_KEY_ID' in os.environ:
+    dynamodb = boto3.resource('dynamodb',
+                      region_name=os.environ['AWS_REGION'],
+                      aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+                      aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+else:
+    dynamodb = boto3.resource('dynamodb', region_name = "us-west-2")
 
+@app.route("/healthz")
+def healthz():
+    return "app is healthy"
 
 @app.route("/")
 def index():
