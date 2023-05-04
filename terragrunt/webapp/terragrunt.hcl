@@ -18,12 +18,12 @@ dependency "sns" {
   config_path = "../sns"
 }
 
-dependency "ecs-cluster" {
-  config_path = "../ecs-cluster"
+dependency "ecs" {
+  config_path = "../ecs"
 }
 
-dependency "alb-client" {
-  config_path = "../alb-client"
+dependency "alb" {
+  config_path = "../alb"
 }
 
 inputs = {
@@ -31,7 +31,7 @@ inputs = {
   launch_type = "FARGATE"
   vpc_id      = dependency.vpc.outputs.vpc_id
 
-  container_image  = "622140367382.dkr.ecr.us-west-2.amazonaws.com/client"
+  container_image  = "622140367382.dkr.ecr.us-west-2.amazonaws.com/app"
   desired_count    = "2"
   container_cpu    = 256
   container_memory = 512
@@ -65,10 +65,9 @@ inputs = {
   ecs_alarms_enabled   = true
   autoscaling_enabled  = true
 
-  ecs_cluster_arn        = dependency.ecs-cluster.outputs.arn
-  ecs_cluster_name       = dependency.ecs-cluster.outputs.name
+  ecs_cluster_arn        = dependency.ecs.outputs.arn
+  ecs_cluster_name       = dependency.ecs.outputs.name
   ecs_private_subnet_ids = dependency.subnets.outputs.private_subnet_ids
-  assign_public_ip       = true
 
   capacity_provider_strategy = [
     {
@@ -89,9 +88,9 @@ inputs = {
   log_driver      = "awslogs"
   aws_logs_region = "us-west-2"
 
-  alb_security_group                              = dependency.alb-client.outputs.security_group_id
-  alb_ingress_unauthenticated_listener_arns       = dependency.alb-client.outputs.listener_arns
-  alb_arn_suffix                                  = dependency.alb-client.outputs.alb_arn_suffix
+  alb_security_group                              = dependency.alb.outputs.security_group_id
+  alb_ingress_unauthenticated_listener_arns       = dependency.alb.outputs.listener_arns
+  alb_arn_suffix                                  = dependency.alb.outputs.alb_arn_suffix
   alb_ingress_unauthenticated_listener_arns_count = 2
   alb_ingress_healthcheck_path                    = "/"
   alb_ingress_unauthenticated_paths               = ["/*"]

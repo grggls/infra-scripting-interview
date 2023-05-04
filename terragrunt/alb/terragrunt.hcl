@@ -1,4 +1,3 @@
-
 terraform {
   source = "git::https://github.com/cloudposse/terraform-aws-alb.git//.?ref=1.7.0"
 }
@@ -16,7 +15,7 @@ dependency "subnets" {
 }
 
 inputs = {
-  name                              = "clientlb"
+  name                              = "alb"
   vpc_id                            = dependency.vpc.outputs.vpc_id
   ip_address_type                   = "ipv4"
   security_group_ids                = [dependency.vpc.outputs.vpc_default_security_group_id]
