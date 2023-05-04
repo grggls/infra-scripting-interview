@@ -11,5 +11,5 @@ dependency "webapp" {
 }
 
 inputs = {
-   ecs_task_role_name      = dependency.webapp.outputs.ecs_task_role_name
+  ecs_task_role_name = dependency.webapp.outputs.ecs_task_role_name
 }

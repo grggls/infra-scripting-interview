@@ -1,8 +1,8 @@
 resource "aws_iam_policy" "dynamodb" {
   name        = "app-task-policy-dynamodb"
   description = "Policy that allows access to DynamoDB"
- 
- policy = <<EOF
+
+  policy = <<EOF
 {
    "Version": "2012-10-17",
    "Statement": [
@@ -21,7 +21,7 @@ resource "aws_iam_policy" "dynamodb" {
 }
 EOF
 }
- 
+
 resource "aws_iam_role_policy_attachment" "ecs-task-role-policy-attachment" {
   role       = var.ecs_task_role_name
   policy_arn = aws_iam_policy.dynamodb.arn
