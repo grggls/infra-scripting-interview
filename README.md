@@ -1,29 +1,10 @@
-# Incode SRE Challenge 2.0
+# Infra Scripting Challenge
 
 # Results
 
 [The webapp](http://alb-1580287575.us-west-2.elb.amazonaws.com/)
 
-<The diagram goes here>
-
-# Objective
-
-- [/]  Create an AWS account and use the free tier to provision the required elements.
-- [ ]  Generate temporal IAM read-only users for us (Sean and Carlos) so we can check the implementation. You can send us the information to our Incode emails
-- [/]  Generate a VPC (VPC01) with public and private subnets, and the required subnets elements (Route tables, Internet gateways, NAT or instance gateways, etc)
-- [/]  Provision an application using ECS with EC2 and Fargate with the following elements:
-    - [/]  public component
-    - [/]  private component
-    - [/]  database component
-- [/]  all the required elements (security groups, roles, log groups, etc). The components must be interconnected, so for example the public layer must connect to the application layer and the application layer must connect to the database layer.
-- [/]  A load balancer with target and auto-scalation groups must be utilized for each layer.
-- [/]  For the database layer, please use an AWS managed service.
-- [/]  Expose the application to Internet using a load balancer of the type you consider the best for this kind of implementation.
-- [/]  No need to assign a domain name or TLS certificates, but explanation of what is required to do it will be necessary.
-- [/]  Select and add five CloudWatch alarms related to the implementation.
-- [ ]  We will require explanation about the reasons of the selected alarms.
-- [ ]  A diagram with the implementation is required.
-- [/]  The candidate can implement the requested elements manually using the AWS console, but extra points are earned if you use some infrastructure as code technology.
+![Reference Architecture Diagram](webapp-diagram.png "Reference Architecture Diagram")
 
 # Pre-Conditions
 
@@ -40,6 +21,7 @@
 ```
 > git clone git@github.com:grggls/infra-scripting-interview.git
 > cd ./infra-scripting-interview/terragrunt
+> terragrunt run-all init
 > terragrunt run-all apply
 ```
 
@@ -47,7 +29,7 @@ In a fresh AWS account this will run partially and generate some errors. The ini
 
 ```
 > cd ../docker && pwd
-> ./infra-scripting-interview/docker
+/Users/gregorydamiani/src/infra-scripting-interview/docker
 > ./build-and-push.sh
 ```
 
@@ -61,18 +43,50 @@ You can then navigate to the DynamoDB section of the AWS console, go into the `d
 
 I made heavy use of the [Cloudposse terraform modules](https://registry.terraform.io/namespaces/cloudposse). One in particular did 90% of the heavy lifting here - https://registry.terraform.io/modules/cloudposse/ecs-web-app/aws/1.8.1
 
+That module needed a slight tweak in order to make it work in this multi-directory terragrunt setup I've built. As a result, the whole of the module's code and config has been copied to `./infra-scripting-interview/terragrunt/modules/terraform-aws-ecs-web-app` and tweaked slightly.
+
 This module created all the Cloudwatch alarms enabled in the webapp:
 
 |Name | Conditions |
 |-----|------------|
-|app-3xx-count-high, HTTPCode_Target_3XX_Count > 25 for 1 datapoints within 5 minutes |
-|app-4xx-count-high, HTTPCode_Target_4XX_Count > 25 for 1 datapoints within 5 minutes |
-|app-5xx-count-high, HTTPCode_Target_5XX_Count > 25 for 1 datapoints within 5 minutes |
-|app-cpu-utilization-high, CPUUtilization > 80 for 1 datapoints within 5 minutes |
-|app-cpu-utilization-low, CPUUtilization < 20 for 1 datapoints within 5 minutes |
-|app-elb-5xx-count-high, HTTPCode_ELB_5XX_Count > 25 for 1 datapoints within 5 minutes |
-|app-memory-utilization-high, MemoryUtilization > 80 for 1 datapoints within 5 minutes |
-|app-memory-utilization-low, MemoryUtilization < 20 for 1 datapoints within 5 minutes |
-|app-target-response-high, TargetResponseTime > 0.5 for 1 datapoints within 5 minutes |
+|app-3xx-count-high | HTTPCode_Target_3XX_Count > 25 for 1 datapoints within 5 minutes |
+|app-4xx-count-high | HTTPCode_Target_4XX_Count > 25 for 1 datapoints within 5 minutes |
+|app-5xx-count-high | HTTPCode_Target_5XX_Count > 25 for 1 datapoints within 5 minutes |
+|app-cpu-utilization-high | CPUUtilization > 80 for 1 datapoints within 5 minutes |
+|app-cpu-utilization-low | CPUUtilization < 20 for 1 datapoints within 5 minutes |
+|app-elb-5xx-count-high | HTTPCode_ELB_5XX_Count > 25 for 1 datapoints within 5 minutes |
+|app-memory-utilization-high | MemoryUtilization > 80 for 1 datapoints within 5 minutes |
+|app-memory-utilization-low | MemoryUtilization < 20 for 1 datapoints within 5 minutes |
+|app-target-response-high | TargetResponseTime > 0.5 for 1 datapoints within 5 minutes |
 
-The 
+The `app-{3,4,5}xx-count-high` alarms are important for every webapp to have. 
+
+500-level HTTP errors are server-side error codes that indicate a problem with the server processing a client's request. These errors occur when the server fails to fulfill a valid request due to various reasons, such as unexpected conditions, server misconfigurations, or application errors. 500-level errors are indicative of problems with hosts, networking, or proxies and can be generated if the Flask app itself has a problem, such as an uncaught exception. We also have `app-elb-5xx-count-high` alarms setup on the ALB to indicate if there are no valid upstream targets to route a request to due to capacity or app downtime. To diagnose any of these conditions in production, it's important to have proper logging at all levels: load-balancer, container runtime and networking, and inside the container itself. Ideally, for more complicated apps, distributed tracing would be in place to show us how requests, latency, and error conditions move around a microservices architecture.
+
+Monitoring 400-level HTTP error codes is crucial for maintaining the health and usability of a web application. These client-side errors help identify issues with user requests, such as incorrect URLs, missing or invalid data, and authentication problems. By monitoring and analyzing these errors, developers can uncover and fix problems in the application, improve user experience, and prevent potential security vulnerabilities Our Flask app responds on two paths: `/` and `/health`. Clients requesting other URLs are misconfigured or malicious. Either way, being notified of increased levels of these errors is crucial.
+
+Monitoring 300-level HTTP status codes is important for managing and optimizing the flow of web traffic, especially in complex and changing web applications. These redirection codes indicate that a requested resource has moved or is accessible through multiple representations. By monitoring 300-level codes, developers can ensure that URL redirections are functioning correctly, maintain the integrity of internal and external links, and improve the overall user experience by minimizing confusion and broken links. For a simple webapp like ours, this cloudwatch alarm isn't necessarily critical.
+
+Our `app-cpu-utilization-high` Cloudwatch alarm is necessary to alert operators when running containers are constrained by CPU over-utilization. It's also tied to our container autoscaling group. New containers will be created and will service requests coming from the load balancer if these threshold is crossed. `app-cpu-utilization-low` will trigger a scale-down of the container fleet.
+
+`app-target-response-high` will alert operators when request latency is spiking within the webapp. We don't utilize this metric for autoscaling considerations, however, as this can lead to drastic scaling out of the container fleet when there is a misconfiguration or application problem, or if the backend (in our case DynamoDB) is over-utilized and suffering from latency problems. In these cases, more containers serving more requests is not the solution.
+
+Finally, `app-memory-utilization-{high,low}` Cloudwatch alarms are created for monitoring memory utilization. Monitoring memory utilization in a container-based web app is crucial for ensuring optimal performance, stability, and resource efficiency. High memory utilization can lead to performance degradation, increased latency, and application crashes or container-runtime events like `oom-killed`, impacting user experience and potentially causing downtime. On the other hand, low memory utilization might indicate underutilization of resources or over-provisioning, leading to inefficient resource allocation and higher infrastructure costs. By monitoring memory usage, developers can identify bottlenecks, optimize resource allocation, and make necessary adjustments to maintain a stable and cost-effective environment.
+
+# Objective
+
+- [/]  Create an AWS account and use the free tier to provision the required elements.
+- [/]  Generate a VPC (VPC01) with public and private subnets, and the required subnets elements (Route tables, Internet gateways, NAT or instance gateways, etc)
+- [/]  Provision an application using ECS with EC2 and Fargate with the following elements:
+    - [/]  public component
+    - [/]  private component
+    - [/]  database component
+- [/]  all the required elements (security groups, roles, log groups, etc). The components must be interconnected, so for example the public layer must connect to the application layer and the application layer must connect to the database layer.
+- [/]  A load balancer with target and auto-scalation groups must be utilized for each layer.
+- [/]  For the database layer, please use an AWS managed service.
+- [/]  Expose the application to Internet using a load balancer of the type you consider the best for this kind of implementation.
+- [/]  No need to assign a domain name or TLS certificates, but explanation of what is required to do it will be necessary.
+- [/]  Select and add five CloudWatch alarms related to the implementation.
+- [/]  We will require explanation about the reasons of the selected alarms.
+- [/]  A diagram with the implementation is required.
+- [/]  The candidate can implement the requested elements manually using the AWS console, but extra points are earned if you use some infrastructure as code technology.
