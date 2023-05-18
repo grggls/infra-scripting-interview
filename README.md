@@ -75,18 +75,18 @@ Finally, `app-memory-utilization-{high,low}` Cloudwatch alarms are created for m
 
 # Objective
 
-- [/]  Create an AWS account and use the free tier to provision the required elements.
-- [/]  Generate a VPC (VPC01) with public and private subnets, and the required subnets elements (Route tables, Internet gateways, NAT or instance gateways, etc)
-- [/]  Provision an application using ECS with EC2 and Fargate with the following elements:
-    - [/]  public component
-    - [/]  private component
-    - [/]  database component
-- [/]  all the required elements (security groups, roles, log groups, etc). The components must be interconnected, so for example the public layer must connect to the application layer and the application layer must connect to the database layer.
-- [/]  A load balancer with target and auto-scalation groups must be utilized for each layer.
-- [/]  For the database layer, please use an AWS managed service.
-- [/]  Expose the application to Internet using a load balancer of the type you consider the best for this kind of implementation.
-- [/]  No need to assign a domain name or TLS certificates, but explanation of what is required to do it will be necessary.
-- [/]  Select and add five CloudWatch alarms related to the implementation.
-- [/]  We will require explanation about the reasons of the selected alarms.
-- [/]  A diagram with the implementation is required.
-- [/]  The candidate can implement the requested elements manually using the AWS console, but extra points are earned if you use some infrastructure as code technology.
+- [x]  Create an AWS account and use the free tier to provision the required elements.
+- [x]  Generate a VPC (VPC01) with public and private subnets, and the required subnets elements (Route tables, Internet gateways, NAT or instance gateways, etc)
+- [x]  Provision an application using ECS with EC2 and Fargate with the following elements:
+    - [x]  public component
+    - [x]  private component
+    - [x]  database component
+- [x]  all the required elements (security groups, roles, log groups, etc). The components must be interconnected, so for example the public layer must connect to the application layer and the application layer must connect to the database layer.
+- [x]  A load balancer with target and auto-scalation groups must be utilized for each layer.
+- [x]  For the database layer, please use an AWS managed service.
+- [x]  Expose the application to Internet using a load balancer of the type you consider the best for this kind of implementation.
+- [x]  No need to assign a domain name or TLS certificates, but explanation of what is required to do it will be necessary.
+- [x]  Select and add five CloudWatch alarms related to the implementation.
+- [x]  We will require explanation about the reasons of the selected alarms.
+- [x]  A diagram with the implementation is required.
+- [x]  The candidate can implement the requested elements manually using the AWS console, but extra points are earned if you use some infrastructure as code technology.
